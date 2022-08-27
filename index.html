@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <title>CSS Table</title>
+  </head>
+  <body>
+    <h1>Pure CSS table exercise</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Invoice</th>
+          <th>Company</th>
+          <th>Due date</th>
+          <th>Status</th>
+          <th>Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a href="#">INV__1001</a></td>
+          <td>DNB</td>
+          <td>27/08/2022</td>
+          <td><p class="status status-unpaid">Unpaid</p></td>
+          <td class="amount">$52,009</td>
+        </tr>
+        <tr>
+          <td><a href="#">INV__1002</a></td>
+          <td>SBanken</td>
+          <td>21/08/2022</td>
+          <td><p class="status status-paid">Paid</p></td>
+          <td class="amount">$11,120</td>
+        </tr>
+        <tr>
+          <td><a href="#">INV__1003</a></td>
+          <td>BNP</td>
+          <td>27/08/2022</td>
+          <td><p class="status status-pending">Pending</p></td>
+          <td class="amount">$44,890</td>
+        </tr>
+        <tr>
+          <td><a href="#">INV__1004</a></td>
+          <td>HSBC</td>
+          <td>22/08/2022</td>
+          <td><p class="status status-pending">Pending</p></td>
+          <td class="amount">$11,520</td>
+        </tr>
+        <tr>
+          <td><a href="#">INV__1005</a></td>
+          <td>MITBEL</td>
+          <td>19/08/2022</td>
+          <td><p class="status status-paid">Paid</p></td>
+          <td class="amount">$33,320</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p id="reference">
+      Based on tutorial by
+      <a href="https://www.youtube.com/watch?v=Oy9K7iz3aa4">Angela Delise</a>
+    </p>
+  </body>
+</html>
