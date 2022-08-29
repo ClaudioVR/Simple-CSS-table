@@ -9,17 +9,18 @@
   </head>
   <body>
     <h1>Interactive table</h1>
+    <p>Add and edit invoices</p>
     <div class="add-invoice-container">
-      <button id="open">Add invoice +</button>
+      <button id="openModal">Add invoice +</button>
       <!-- <button onclick="addInvoice()" id="add">Add test</button> -->
     </div>
 
+    <!-- Modal window for add a NEW incoive -->
     <div class="modal-container" id="modal-container">
       <div class="modal">
         <div class="modal-header">
           <h1>Submit new invoice</h1>
-          <button id="close">X</button>
-
+          <button id="closeModal">X</button>
         </div>
         <p>
           <form onsubmit="submitInvoice(event)" id="invoiceForm">
@@ -33,6 +34,30 @@
             </select>
             <input required id="newInvoiceAmount" type="number" placeholder="Amount (NOK)" >
             <button type="submit">Submit</button>
+          </form>
+        </p>
+      </div>
+    </div>
+
+    <!-- Modal window to EDIT an invoice -->
+    <div class="modal-container" id="edit-modal-container">
+      <div class="modal">
+        <div class="modal-header">
+          <h1>Edit invoice</h1>
+          <button id="closeEditModal">X</button>
+        </div>
+        <p>
+          <form onsubmit="saveInvoice(event)" id="editForm">
+            <input disabled id="editInvoiceId" type="number" placeholder="Invoice number">
+            <input required id="editInvoiceCompany" type="text" placeholder="Company">
+            <input required id="editInvoiceDate" type="date" placeholder="Due date">
+            <select required name="statuses" id="editInvoiceStatus">
+              <option value="unpaid">Unpaid</option>
+              <option value="pending">Pending</option>
+              <option value="paid">Paid</option>
+            </select>
+            <input required id="editInvoiceAmount" type="number" placeholder="Amount (NOK)" >
+            <button type="submit">Save</button>
           </form>
         </p>
       </div>
@@ -52,7 +77,7 @@
       <tbody id="table2data"></tbody>
     </table>
     <p id="reference">
-      Based on tutorial by
+      UI Based on tutorial by
       <a href="https://www.youtube.com/watch?v=Oy9K7iz3aa4">Angela Delise</a>
     </p>
   </body>
@@ -95,16 +120,21 @@
         amount: 334500,
       },
     ];
-    const open = document.getElementById("open");
     const modalContainer = document.getElementById("modal-container");
-    const close = document.getElementById("close");
+    const editModalContainer = document.getElementById("edit-modal-container");
+    const openModal = document.getElementById("openModal");
+    const closeModal = document.getElementById("closeModal");
+    const closeEditModal = document.getElementById("closeEditModal");
+    
 
-
-    open.addEventListener("click", () => {
+    openModal.addEventListener("click", () => {
       modalContainer.classList.add("show");
     });
-    close.addEventListener("click", () => {
+    closeModal.addEventListener("click", () => {
       modalContainer.classList.remove("show");
+    });
+    closeEditModal.addEventListener("click", () => {
+      editModalContainer.classList.remove("show");
     });
 
     loadTableData(tableData);
@@ -121,7 +151,7 @@
             <td>${formatDate(data.dueDate)}</td>
             <td><p class="status status-${data.status}">${data.status}</p></td>
             <td class="amount">${formatCurrency(data.amount)}</td>
-            <td><Button>Edit</Button></td>
+            <td><Button onclick="editInvoice(${data.invoiceID})" id="edit">Edit</Button></td>
           </tr>
         `;
       }
@@ -169,10 +199,6 @@
     }
 
     function sortNumberString(sort, columnName) {
-      console.log("sort by string");
-      console.log(columnName);
-      console.log(sort);
-
       if (sort) {
         tableData.sort((a, b) =>
           a.status > b.status ? 1 : b.status > a.status ? -1 : 0
@@ -193,7 +219,6 @@
     }
 
     function addInvoice() {
-      console.log("add test invoice");
       const newInvoice = {
         invoiceID: 1006,
         company: "DNB",
@@ -207,6 +232,9 @@
 
     function submitInvoice(e) {
       e.preventDefault();
+
+      //POST api call to backend to submit invoice
+
       // Form input values
       const newInvoiceID = document.getElementById('newInvoiceId').value
       const newInvoiceCompany = document.getElementById('newInvoiceCompany').value
@@ -215,17 +243,71 @@
       const newInvoiceAmount = document.getElementById('newInvoiceAmount').value
 
       const newInvoice = {
+        invoiceID: parseInt(newInvoiceID),
+        company: newInvoiceCompany,
+        dueDate: new Date(newInvoiceDate),
+        status: newInvoiceStatus,
+        amount: newInvoiceAmount,
+      };
+
+      //Load new data, close modal and reset input fields
+      tableData.push(newInvoice)
+      loadTableData(tableData);
+      modalContainer.classList.remove("show");
+      document.getElementById('invoiceForm').reset()
+    }
+
+    function editInvoice(invoiceId) {
+      //Open and populate the form in the editInvoice modal window
+
+      const selectedInvoice = tableData.find(invoice => {
+        return invoice.invoiceID === invoiceId
+      })
+
+      //Set values for modal based on selected invoice
+      document.getElementById('editInvoiceId').value = parseInt(selectedInvoice.invoiceID)
+      document.getElementById('editInvoiceCompany').value = selectedInvoice.company
+      let newDate = new Date(selectedInvoice.dueDate)
+      document.getElementById('editInvoiceDate').value = newDate.toISOString().split('T')[0]
+      document.getElementById('editInvoiceStatus').value = selectedInvoice.status
+      document.getElementById('editInvoiceAmount').value = selectedInvoice.amount
+      //Open modal
+      editModalContainer.classList.add("show");
+
+    }
+
+    function saveInvoice(e) {
+      e.preventDefault();
+
+      //PUT api call to backend to edit invoice
+
+      // Form input values
+      const newInvoiceID = parseInt(document.getElementById('editInvoiceId').value)
+      const newInvoiceCompany = document.getElementById('editInvoiceCompany').value
+      const newInvoiceDate = document.getElementById('editInvoiceDate').value
+      const newInvoiceStatus = document.getElementById('editInvoiceStatus').value
+      const newInvoiceAmount = document.getElementById('editInvoiceAmount').value
+
+      //Get array index of object we are editing
+      const invoiceIndex = tableData.findIndex(invoice => {
+        return invoice.invoiceID === newInvoiceID
+      });
+
+      const newInvoice = {
         invoiceID: newInvoiceID,
         company: newInvoiceCompany,
         dueDate: new Date(newInvoiceDate),
         status: newInvoiceStatus,
         amount: newInvoiceAmount,
       };
-      tableData.push(newInvoice)
-      loadTableData(tableData);
-      modalContainer.classList.remove("show");
-      document.getElementById('invoiceForm').reset()
       
+      // Replace old invoice object with edited invoice object
+      tableData.splice(invoiceIndex, 1, newInvoice)
+
+      //Load new data, close modal and reset input fields
+      loadTableData(tableData);
+      editModalContainer.classList.remove("show");
+      document.getElementById('editForm').reset()
     }
   </script>
 </html>
