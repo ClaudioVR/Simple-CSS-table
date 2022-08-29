@@ -8,59 +8,175 @@
     <title>CSS Table</title>
   </head>
   <body>
-    <h1>Pure CSS table exercise</h1>
-    <table>
+    <h1>Sortable table</h1>
+    <div class="add-invoice-container">
+      <button id="open">Add invoice</button>
+    </div>
+
+    <div class="modal-container" id="modal-container">
+      <div class="modal">
+        <h1>Modal window</h1>
+        <p>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Nostrum
+          perspiciatis numquam veniam ullam? Voluptas, dolor deserunt aut quia
+          reiciendis necessitatibus sit debitis ducimus fuga dolore. Doloremque
+          exercitationem ea nulla aliquam?
+        </p>
+        <button id="close">Close me</button>
+      </div>
+    </div>
+
+    <table id="table2">
       <thead>
         <tr>
-          <th>Invoice</th>
-          <th>Company</th>
-          <th>Due date</th>
-          <th>Status</th>
-          <th>Amount</th>
+          <th onclick="sortColumn('invoiceID')">Invoice</th>
+          <th onclick="sortColumn('company')">Company</th>
+          <th onclick="sortColumn('dueDate')">Due date</th>
+          <th onclick="sortColumn('status')">Status</th>
+          <th onclick="sortColumn('amount')">Amount</th>
         </tr>
       </thead>
-      <tbody>
-        <tr>
-          <td><a href="#">INV__1001</a></td>
-          <td>DNB</td>
-          <td>27/08/2022</td>
-          <td><p class="status status-unpaid">Unpaid</p></td>
-          <td class="amount">$52,009</td>
-        </tr>
-        <tr>
-          <td><a href="#">INV__1002</a></td>
-          <td>SBanken</td>
-          <td>21/08/2022</td>
-          <td><p class="status status-paid">Paid</p></td>
-          <td class="amount">$11,120</td>
-        </tr>
-        <tr>
-          <td><a href="#">INV__1003</a></td>
-          <td>BNP</td>
-          <td>27/08/2022</td>
-          <td><p class="status status-pending">Pending</p></td>
-          <td class="amount">$44,890</td>
-        </tr>
-        <tr>
-          <td><a href="#">INV__1004</a></td>
-          <td>HSBC</td>
-          <td>22/08/2022</td>
-          <td><p class="status status-pending">Pending</p></td>
-          <td class="amount">$11,520</td>
-        </tr>
-        <tr>
-          <td><a href="#">INV__1005</a></td>
-          <td>MITBEL</td>
-          <td>19/08/2022</td>
-          <td><p class="status status-paid">Paid</p></td>
-          <td class="amount">$33,320</td>
-        </tr>
-      </tbody>
+      <tbody id="table2data"></tbody>
     </table>
-
     <p id="reference">
       Based on tutorial by
       <a href="https://www.youtube.com/watch?v=Oy9K7iz3aa4">Angela Delise</a>
     </p>
   </body>
+  <script>
+    let sortDirection = false;
+    let tableData = [
+      {
+        invoiceID: 1001,
+        company: "DNB",
+        dueDate: new Date(2022, 4, 21),
+        status: "unpaid",
+        amount: 520009,
+      },
+      {
+        invoiceID: 1002,
+        company: "SBanken",
+        dueDate: new Date(2022, 7, 18),
+        status: "paid",
+        amount: 111200,
+      },
+      {
+        invoiceID: 1003,
+        company: "Bank Norwegian",
+        dueDate: new Date(2022, 5, 14),
+        status: "pending",
+        amount: 448900,
+      },
+      {
+        invoiceID: 1004,
+        company: "DanskeBanken",
+        dueDate: new Date(2022, 7, 22),
+        status: "pending",
+        amount: 115200,
+      },
+      {
+        invoiceID: 1005,
+        company: "Sparebank 1",
+        dueDate: new Date(2021, 11, 19),
+        status: "paid",
+        amount: 334500,
+      },
+    ];
+
+    loadTableData(tableData);
+
+    function loadTableData(tableData) {
+      const tableBody = document.getElementById("table2data");
+      let dataHtml = "";
+
+      for (let data of tableData) {
+        dataHtml += `
+          <tr>
+            <td><a href="#">INV__${data.invoiceID}</a></td>
+            <td>${data.company}</td>
+            <td>${formatDate(data.dueDate)}</td>
+            <td><p class="status status-${data.status}">${data.status}</p></td>
+            <td class="amount">${formatCurrency(data.amount)}</td>
+          </tr>
+        `;
+      }
+
+      tableBody.innerHTML = dataHtml;
+    }
+
+    function formatDate(date) {
+      return date.toLocaleString("no-No").slice(0, -10);
+    }
+
+    function formatCurrency(amount) {
+      return amount.toLocaleString("no-NO", {
+        style: "currency",
+        currency: "NOK",
+        maximumFractionDigits: 0,
+      });
+    }
+
+    function sortColumn(columnName) {
+      const dataType = typeof tableData[0][columnName];
+      sortDirection = !sortDirection;
+
+      switch (dataType) {
+        case "number":
+          sortNumberColumn(sortDirection, columnName);
+          break;
+        case "string":
+          sortNumberString(sortDirection, columnName);
+          break;
+        case "object":
+          sortNumberDate(sortDirection, columnName);
+          break;
+      }
+
+      loadTableData(tableData);
+    }
+
+    function sortNumberColumn(sort, columnName) {
+      tableData = tableData.sort((a, b) => {
+        return sort
+          ? a[columnName] - b[columnName]
+          : b[columnName] - a[columnName];
+      });
+    }
+
+    function sortNumberString(sort, columnName) {
+      console.log("sort by string");
+      console.log(columnName);
+      console.log(sort);
+
+      if (sort) {
+        tableData.sort((a, b) =>
+          a.status > b.status ? 1 : b.status > a.status ? -1 : 0
+        );
+      } else {
+        tableData.sort((a, b) =>
+          a.status < b.status ? 1 : b.status < a.status ? -1 : 0
+        );
+      }
+    }
+
+    function sortNumberDate(sort, columnName) {
+      tableData = tableData.sort((a, b) => {
+        return sort
+          ? Number(a.dueDate) - Number(b.dueDate)
+          : Number(b.dueDate) - Number(a.dueDate);
+      });
+    }
+  </script>
+  <script>
+    const open = document.getElementById("open");
+    const modalContainer = document.getElementById("modal-container");
+    const close = document.getElementById("close");
+
+    open.addEventListener("click", () => {
+      modalContainer.classList.add("show");
+    });
+    close.addEventListener("click", () => {
+      modalContainer.classList.remove("show");
+    });
+  </script>
 </html>
