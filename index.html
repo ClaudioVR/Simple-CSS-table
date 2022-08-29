@@ -8,21 +8,33 @@
     <title>CSS Table</title>
   </head>
   <body>
-    <h1>Sortable table</h1>
+    <h1>Interactive table</h1>
     <div class="add-invoice-container">
-      <button id="open">Add invoice</button>
+      <button id="open">Add invoice +</button>
+      <!-- <button onclick="addInvoice()" id="add">Add test</button> -->
     </div>
 
     <div class="modal-container" id="modal-container">
       <div class="modal">
-        <h1>Modal window</h1>
+        <div class="modal-header">
+          <h1>Submit new invoice</h1>
+          <button id="close">X</button>
+
+        </div>
         <p>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Nostrum
-          perspiciatis numquam veniam ullam? Voluptas, dolor deserunt aut quia
-          reiciendis necessitatibus sit debitis ducimus fuga dolore. Doloremque
-          exercitationem ea nulla aliquam?
+          <form onsubmit="submitInvoice(event)" id="invoiceForm">
+            <input required id="newInvoiceId" type="number" placeholder="Invoice number">
+            <input required id="newInvoiceCompany" type="text" placeholder="Company">
+            <input required id="newInvoiceDate" type="date" placeholder="Due date">
+            <select required name="statuses" id="newInvoiceStatus">
+              <option value="unpaid">Unpaid</option>
+              <option value="pending">Pending</option>
+              <option value="paid">Paid</option>
+            </select>
+            <input required id="newInvoiceAmount" type="number" placeholder="Amount (NOK)" >
+            <button type="submit">Submit</button>
+          </form>
         </p>
-        <button id="close">Close me</button>
       </div>
     </div>
 
@@ -34,6 +46,7 @@
           <th onclick="sortColumn('dueDate')">Due date</th>
           <th onclick="sortColumn('status')">Status</th>
           <th onclick="sortColumn('amount')">Amount</th>
+          <th >Actions</th>
         </tr>
       </thead>
       <tbody id="table2data"></tbody>
@@ -82,6 +95,17 @@
         amount: 334500,
       },
     ];
+    const open = document.getElementById("open");
+    const modalContainer = document.getElementById("modal-container");
+    const close = document.getElementById("close");
+
+
+    open.addEventListener("click", () => {
+      modalContainer.classList.add("show");
+    });
+    close.addEventListener("click", () => {
+      modalContainer.classList.remove("show");
+    });
 
     loadTableData(tableData);
 
@@ -97,6 +121,7 @@
             <td>${formatDate(data.dueDate)}</td>
             <td><p class="status status-${data.status}">${data.status}</p></td>
             <td class="amount">${formatCurrency(data.amount)}</td>
+            <td><Button>Edit</Button></td>
           </tr>
         `;
       }
@@ -166,17 +191,41 @@
           : Number(b.dueDate) - Number(a.dueDate);
       });
     }
-  </script>
-  <script>
-    const open = document.getElementById("open");
-    const modalContainer = document.getElementById("modal-container");
-    const close = document.getElementById("close");
 
-    open.addEventListener("click", () => {
-      modalContainer.classList.add("show");
-    });
-    close.addEventListener("click", () => {
+    function addInvoice() {
+      console.log("add test invoice");
+      const newInvoice = {
+        invoiceID: 1006,
+        company: "DNB",
+        dueDate: new Date(2022, 7, 29),
+        status: "unpaid",
+        amount: 520009,
+      };
+      tableData.push(newInvoice)
+      loadTableData(tableData);
+    }
+
+    function submitInvoice(e) {
+      e.preventDefault();
+      // Form input values
+      const newInvoiceID = document.getElementById('newInvoiceId').value
+      const newInvoiceCompany = document.getElementById('newInvoiceCompany').value
+      const newInvoiceDate = document.getElementById('newInvoiceDate').value
+      const newInvoiceStatus = document.getElementById('newInvoiceStatus').value
+      const newInvoiceAmount = document.getElementById('newInvoiceAmount').value
+
+      const newInvoice = {
+        invoiceID: newInvoiceID,
+        company: newInvoiceCompany,
+        dueDate: new Date(newInvoiceDate),
+        status: newInvoiceStatus,
+        amount: newInvoiceAmount,
+      };
+      tableData.push(newInvoice)
+      loadTableData(tableData);
       modalContainer.classList.remove("show");
-    });
+      document.getElementById('invoiceForm').reset()
+      
+    }
   </script>
 </html>
